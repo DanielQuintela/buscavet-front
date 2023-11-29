@@ -91,15 +91,90 @@
           <input type="text" placeholder="Pesquisar cidade..." />
           <button type="submit"><i class="fas fa-search"></i></button>
         </div>
+        
         <div class="filter-container">
-          <label for="tipoConsulta">Tipo de Consulta:</label>
-          <select id="tipoConsulta">
-            <option value="todos">Todos</option>
-            <option value="exame">Exame</option>
-            <option value="cirurgia">Cirurgia</option>
-            <option value="vacina">Vacinação</option>
-          </select>
+            <label for="tipoEspecialidade">Especialidade:</label>
+            <select id="tipoEspecialidade">
+                <option value="todos">Todos</option>
+            </select>
+        
+            <button onclick="buscarVeterinarios()">Buscar Veterinários</button>
         </div>
+        
+        <!-- Aqui você poderia exibir os resultados da busca -->
+        <div id="resultados"></div>
+        
+        <script>
+            // Função para preencher o dropdown com as especialidades do backend
+            async function carregarEspecialidades() {
+                const dropdown = document.getElementById('tipoEspecialidade');
+        
+                try {
+                    // Faz a requisição ao backend para obter as especialidades
+                    const response = await fetch('http://localhost:4000/especializacao');
+                    const data = await response.json();
+        
+                    // Adiciona as opções ao dropdown
+                    data.forEach(especialidade => {
+                        const option = document.createElement('option');
+                        option.value = especialidade.idEspecialidade; // Aqui recebe o id da especialidade, que vai voltar na requisiçãopara buscar os veterinários
+                        option.textContent = especialidade.nome; // Aqui o nome para os usuários
+                        dropdown.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error('Erro ao carregar especialidades:', error);
+                }
+            }
+        
+            // Chama a função para carregar as especialidades ao carregar a página
+            carregarEspecialidades();
+        
+            // Função para buscar veterinários com base na especialidade selecionada
+            function buscarVeterinarios() {
+                const especialidadeSelecionada = document.getElementById('tipoEspecialidade').value;
+                const resultadosContainer = document.getElementById('resultados');
+        
+                const xhr = new XMLHttpRequest();
+                let url;
+        
+                // Verifica se a especialidade selecionada é 'todos' ou uma especialidade específica
+                if (especialidadeSelecionada === 'todos') {
+                    url = 'http://localhost:4000/veterinarios';
+                } else {
+                    url = `http://localhost:4000/veterinarios/especializacao/${especialidadeSelecionada}`;
+                }
+        
+                xhr.open('GET', url, true);
+        
+                xhr.onload = function () {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        const data = JSON.parse(xhr.responseText);
+        
+                        // Exibe os resultados (você pode ajustar conforme necessário)
+                        resultadosContainer.innerHTML = JSON.stringify(data, null, 2);
+                        console.log('Veterinários:', data);
+                        console.log(resultadosContainer)
+                    } else {
+                        console.error('Erro ao buscar veterinários:', xhr.statusText);
+                    }
+                };
+        
+                xhr.onerror = function () {
+                    console.error('Erro de conexão ao buscar veterinários.');
+                    console.log('Veterinários:', data);
+                    console.log(resultadosContainer)
+                };
+        
+                xhr.send();
+            }
+        
+            // Adiciona um ouvinte de evento para buscar veterinários quando a especialidade é alterada
+            document.getElementById('tipoEspecialidade').addEventListener('change', buscarVeterinarios);
+        </script>
+        
+        
+        
+        
         <div class="card-container">
           <div class="card">
             <img src="img/medVet1.png" alt="Médico João" />
